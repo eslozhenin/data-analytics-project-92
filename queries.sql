@@ -71,20 +71,48 @@ from customers
 group by age_category
 order by age_category;
 
+/*уникальные покупателей с выручкой*/
+select
+    to_char(s.sale_date, 'yyyy-mm') as selling_month,
+    count(distinct customer_id) as total_customers,
+    floor(sum(s.quantity * p.price)) as income
+from sales as s
+inner join employees as e
+    on s.sales_person_id = e.employee_id
+inner join products as p
+    on s.product_id = p.product_id
+group by selling_month
+order by selling_month asc;
 
+/*первая покупка по акции*/
+with special_offer as (
+    select distinct
+        s.customer_id,
+        concat(c.first_name, ' ', c.last_name) as customer,
+        first_value(s.sale_date)
+            over (
+                partition by s.customer_id
+                order by s.sale_date
+            )
+        as sale_date,
+        concat(e.first_name, ' ', e.last_name) as seller
+    from sales as s
+    inner join employees as e
+        on s.sales_person_id = e.employee_id
+    inner join products as p
+        on s.product_id = p.product_id
+    inner join customers as c
+        on s.customer_id = c.customer_id
+    where p.price = '0'
+    group by s.customer_id, s.sale_date, p.price, customer, seller
+    order by s.customer_id
+)
 
-
-
-
-
-
-
-
-
-
-
-
-
+select
+    customer,
+    sale_date,
+    seller
+from special_offer;
 
 
 
