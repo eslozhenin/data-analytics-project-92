@@ -50,7 +50,7 @@ with weekly_gain as (
     inner join products as p
         on s.product_id = p.product_id
     group by seller, day_of_week, number_weekday
-    order by seller, number_weekday
+    order by number_weekday, seller
 )
 
 select
@@ -95,7 +95,8 @@ with special_offer as (
                 order by s.sale_date
             )
         as sale_date,
-        concat(e.first_name, ' ', e.last_name) as seller
+        concat(e.first_name, ' ', e.last_name) as seller,
+        p.price
     from sales as s
     inner join employees as e
         on s.sales_person_id = e.employee_id
@@ -103,8 +104,6 @@ with special_offer as (
         on s.product_id = p.product_id
     inner join customers as c
         on s.customer_id = c.customer_id
-    where p.price = '0'
-    group by s.customer_id, s.sale_date, p.price, customer, seller
     order by s.customer_id
 )
 
@@ -112,14 +111,5 @@ select
     customer,
     sale_date,
     seller
-from special_offer;
-
-
-
-
-
-
-
-
-
-
+from special_offer
+where price = '0';
