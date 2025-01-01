@@ -88,15 +88,16 @@ order by selling_month asc;
 with special_offer as (
     select distinct
         s.customer_id,
+        p.price,
+        s.sale_date,
         concat(c.first_name, ' ', c.last_name) as customer,
-        first_value(s.sale_date)
+        row_number()
             over (
                 partition by s.customer_id
                 order by s.sale_date
             )
-        as sale_date,
-        concat(e.first_name, ' ', e.last_name) as seller,
-        p.price
+        as rn,
+        concat(e.first_name, ' ', e.last_name) as seller
     from sales as s
     inner join employees as e
         on s.sales_person_id = e.employee_id
@@ -112,4 +113,4 @@ select
     sale_date,
     seller
 from special_offer
-where price = '0';
+where price = '0' and rn = 1;
